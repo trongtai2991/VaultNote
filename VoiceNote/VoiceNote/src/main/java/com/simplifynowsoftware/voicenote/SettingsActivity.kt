@@ -1,128 +1,187 @@
-/*
- * Copyright (C) 2013-2025 Simplify Now, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.simplifynowsoftware.voicenote
 
 import android.content.Context
-import android.content.res.Configuration
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.preference.ListPreference
-import android.preference.Preference
-import android.preference.PreferenceActivity
-import android.preference.PreferenceCategory
-import android.preference.PreferenceFragment
-import android.preference.PreferenceManager
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.google.android.material.switchmaterial.SwitchMaterial
+import org.json.JSONArray
+import org.json.JSONObject
 
-class SettingsActivity : PreferenceActivity() {
+class SettingsActivity : AppCompatActivity() {
 
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        setupSimplePreferencesScreen()
+    private lateinit var autoExportSwitch: SwitchMaterial
+    private lateinit var vaultPathText: TextView
+    private lateinit var commandsContainer: LinearLayout
+    private lateinit var languageGroup: RadioGroup
+    private lateinit var rbVi: RadioButton
+    private lateinit var rbEn: RadioButton
+    
+    private val directoryPickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let {
+            contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            saveVaultUri(it)
+            updateUi()
+        }
     }
 
-    // Shows the simplified settings UI if the device configuration dictates that a simplified, single-pane UI should be shown.
-    private fun setupSimplePreferencesScreen() {
-        if (!isSimplePreferences(this)) return
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
 
-        // In the simplified UI, fragments are not used at all and we instead use
-        // the older PreferenceActivity APIs.
+        autoExportSwitch = findViewById(R.id.switch_auto_export)
+        vaultPathText = findViewById(R.id.text_vault_path)
+        commandsContainer = findViewById(R.id.container_commands)
+        languageGroup = findViewById(R.id.rg_language)
+        rbVi = findViewById(R.id.rb_vi)
+        rbEn = findViewById(R.id.rb_en)
 
-        // Add 'general' preferences.
-        addPreferencesFromResource(R.xml.pref_general)
+        val btnSelectVault = findViewById<Button>(R.id.btn_select_vault)
+        val btnAddCommand = findViewById<Button>(R.id.btn_add_command)
+        val btnApplyLanguage = findViewById<Button>(R.id.btn_apply_language)
 
-        // Add 'data' preferences, and a corresponding header.
-        val fakeHeader = PreferenceCategory(this)
-        fakeHeader.setTitle(R.string.pref_header_data)
-        preferenceScreen.addPreference(fakeHeader)
-        addPreferencesFromResource(R.xml.pref_data)
+        updateUi()
 
-        // Bind the summaries of relevant preferences to their values.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_destination)))
-        // bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_keep_account)))
+        autoExportSwitch.setOnCheckedChangeListener { _, isChecked ->
+            getSharedPreferences("VaultSettings", Context.MODE_PRIVATE).edit()
+                .putBoolean("auto_export_enabled", isChecked).apply()
+        }
+
+        btnApplyLanguage.setOnClickListener {
+            val selectedLang = if (rbVi.isChecked) "vi" else "en"
+            
+            // 1. Lưu cấu hình mặc định cho Giọng nói (Full tag)
+            val fullTag = if (selectedLang == "vi") "vi-VN" else "en-US"
+            getSharedPreferences("VaultSettings", Context.MODE_PRIVATE).edit()
+                .putString("default_language", fullTag).apply()
+
+            // 2. Áp dụng ngôn ngữ cho Giao diện (Toàn app)
+            val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(selectedLang)
+            AppCompatDelegate.setApplicationLocales(appLocale)
+            
+            Toast.makeText(this, if(selectedLang == "vi") "Đã áp dụng tiếng Việt" else "English applied", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSelectVault.setOnClickListener {
+            directoryPickerLauncher.launch(null)
+        }
+
+        btnAddCommand.setOnClickListener {
+            showAddCommandDialog()
+        }
     }
 
-    override fun onIsMultiPane(): Boolean = isLargeTablet(this) && !isSimplePreferences(this)
+    private fun updateUi() {
+        val prefs = getSharedPreferences("VaultSettings", Context.MODE_PRIVATE)
+        autoExportSwitch.isChecked = prefs.getBoolean("auto_export_enabled", false)
+        val uriString = prefs.getString("vault_uri", null)
+        vaultPathText.text = if (uriString != null) Uri.parse(uriString).path else "Chưa chọn thư mục Vault"
+        
+        val currentLang = prefs.getString("default_language", "vi-VN")
+        if (currentLang?.startsWith("vi") == true) rbVi.isChecked = true else rbEn.isChecked = true
 
-    companion object {
-        // Determines whether to always show the simplified settings UI
-        private const val ALWAYS_SIMPLE_PREFS: Boolean = false
+        loadCommands()
+    }
 
-        // Helper: determine if the device has an extra-large screen (e.g., 10" tablets)
-        private fun isLargeTablet(context: Context): Boolean {
-            return (context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK) >=
-                Configuration.SCREENLAYOUT_SIZE_XLARGE
+    private fun loadCommands() {
+        commandsContainer.removeAllViews()
+        val prefs = getSharedPreferences("VaultSettings", Context.MODE_PRIVATE)
+        val commandsJson = prefs.getString("voice_commands", "[]")
+        val commands = JSONArray(commandsJson)
+
+        for (i in 0 until commands.length()) {
+            val obj = commands.getJSONObject(i)
+            addCommandView(obj.getString("phrase"), obj.getString("punctuation"), i)
         }
+    }
 
-        // Determines whether the simplified settings UI should be shown.
-        private fun isSimplePreferences(context: Context): Boolean {
-            return ALWAYS_SIMPLE_PREFS || !isLargeTablet(context)
+    private fun addCommandView(phrase: String, punctuation: String, index: Int) {
+        val view = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_2, null)
+        view.findViewById<TextView>(android.R.id.text1).apply {
+            text = phrase
+            setTextColor(android.graphics.Color.WHITE)
         }
+        view.findViewById<TextView>(android.R.id.text2).apply {
+            text = "Thay bằng: $punctuation"
+            setTextColor(android.graphics.Color.GRAY)
+        }
+        view.setOnClickListener {
+            showDeleteConfirm(index)
+        }
+        commandsContainer.addView(view)
+    }
 
-        // Listener that updates a preference's summary to reflect its new value.
-        private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
-            val stringValue = value.toString()
-            if (preference is ListPreference) {
-                val index = preference.findIndexOfValue(stringValue)
-                preference.summary = if (index >= 0) preference.entries[index] else null
-            } else {
-                preference.summary = stringValue
+    private fun showAddCommandDialog() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 20, 50, 20)
+        }
+        val editPhrase = EditText(this).apply { hint = "Từ khóa (VD: phẩy)" }
+        val editPunc = EditText(this).apply { hint = "Dấu câu (VD: ,)" }
+        layout.addView(editPhrase)
+        layout.addView(editPunc)
+
+        AlertDialog.Builder(this)
+            .setTitle("Thêm lệnh giọng nói")
+            .setView(layout)
+            .setPositiveButton("Lưu") { _, _ ->
+                saveNewCommand(editPhrase.text.toString(), editPunc.text.toString())
             }
-            true
-        }
-
-        // Binds a preference's summary to its value and triggers immediately
-        private fun bindPreferenceSummaryToValue(preference: Preference) {
-            preference.onPreferenceChangeListener = sBindPreferenceSummaryToValueListener
-            val current = PreferenceManager.getDefaultSharedPreferences(preference.context)
-                .getString(preference.key, "") ?: ""
-            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, current)
-        }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
-    override fun onBuildHeaders(target: MutableList<Header>) {
-        if (!isSimplePreferences(this)) {
-            loadHeadersFromResource(R.xml.pref_headers, target)
-        }
+    private fun saveNewCommand(phrase: String, punctuation: String) {
+        if (phrase.isEmpty() || punctuation.isEmpty()) return
+        val prefs = getSharedPreferences("VaultSettings", Context.MODE_PRIVATE)
+        val commandsJson = prefs.getString("voice_commands", "[]")
+        val commands = JSONArray(commandsJson)
+        commands.put(JSONObject().apply {
+            put("phrase", phrase.lowercase())
+            put("punctuation", punctuation)
+        })
+        prefs.edit().putString("voice_commands", commands.toString()).apply()
+        loadCommands()
     }
 
-    /**
-     * isValidFragment was added in API 19 to address a security vulnerability.
-     * Ensure that the fragment is one of our known fragments.
-     */
-    override fun isValidFragment(fragmentName: String): Boolean {
-        return GeneralPreferenceFragment::class.java.name == fragmentName ||
-            DataPreferenceFragment::class.java.name == fragmentName
+    private fun showDeleteConfirm(index: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Xóa lệnh này?")
+            .setPositiveButton("Xóa") { _, _ ->
+                deleteCommand(index)
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
-    /** This fragment shows general preferences only. */
-    class GeneralPreferenceFragment : PreferenceFragment() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            addPreferencesFromResource(R.xml.pref_general)
+    private fun deleteCommand(index: Int) {
+        val prefs = getSharedPreferences("VaultSettings", Context.MODE_PRIVATE)
+        val commandsJson = prefs.getString("voice_commands", "[]")
+        val commands = JSONArray(commandsJson)
+        val newList = JSONArray()
+        for (i in 0 until commands.length()) {
+            if (i != index) newList.put(commands.get(i))
         }
+        prefs.edit().putString("voice_commands", newList.toString()).apply()
+        loadCommands()
     }
 
-    /** This fragment shows data and sync preferences only. */
-    class DataPreferenceFragment : PreferenceFragment() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            addPreferencesFromResource(R.xml.pref_data)
-
-            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_destination)))
-            // bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_keep_account)))
-        }
+    private fun saveVaultUri(uri: Uri) {
+        getSharedPreferences("VaultSettings", Context.MODE_PRIVATE).edit()
+            .putString("vault_uri", uri.toString()).apply()
     }
 }

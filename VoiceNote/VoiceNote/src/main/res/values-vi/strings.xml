@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VaultNote</string>
+    <string name="action_settings">Cài đặt</string>
+    <string name="speech_prompt">Hãy nói ngay. Nói \"trợ giúp\" để biết thêm chi tiết.</string>
+    <string name="speech_fail">Không thể nhận diện giọng nói - hãy đảm bảo Google Voice Search đã được cài đặt.</string>
+    <string name="message_title">VaultNote</string>
+    <string name="message_subject">Ghi chú giọng nói</string>
+    <string name="help_message">Chào mừng bạn đến với VaultNote. Chỉ cần mở ứng dụng và nói nội dung ghi chú.\n\nNói \"cài đặt\" để cấu hình và \"trợ giúp\" để xem màn hình này.</string>
+    <string name="title_activity_help">Trợ giúp</string>
+
+    <!-- Các chuỗi mới cho giao diện -->
+    <string name="save">LƯU</string>
+    <string name="voice">GIỌNG NÓI</string>
+    <string name="stop">DỪNG</string>
+    <string name="note_title_hint">Tiêu đề ghi chú</string>
+    <string name="note_content_hint">Bắt đầu gõ nội dung...</string>
+    <string name="select_vault">CHỌN THƯ MỤC VAULT</string>
+    <string name="auto_export_title">Tự động xuất sang Obsidian</string>
+    <string name="auto_export_desc">Tự động tạo file .md khi lưu ghi chú</string>
+    <string name="voice_recognition_header">NHẬN DIỆN GIỌNG NÓI</string>
+    <string name="default_lang_label">Ngôn ngữ giao diện &amp; mặc định</string>
+    <string name="custom_commands_label">Tùy chỉnh lệnh (Ví dụ: \'phẩy\' -> \',\')</string>
+    <string name="add_command">THÊM LỆNH</string>
+</resources>

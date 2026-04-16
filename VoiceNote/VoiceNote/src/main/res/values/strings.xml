@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Voice Note</string>
+    <string name="app_name">VaultNote</string>
     <string name="action_settings">Settings</string>
     <string name="speech_prompt">Speak Now. Say \"help\" for more information.</string>
     <string name="speech_fail">Cannot capture voice - ensure Google Voice Search is installed.</string>
-    <string name="message_title">Voice Note</string>
+    <string name="message_title">VaultNote</string>
     <string name="message_subject">Captured Voice Note</string>
-    <string name="help_message">Welcome to Voice Note.  Simply start the app, and speak your notes.\n\nSay \"settings\" to configure the settings, and \"help\" to see this screen.</string>
+    <string name="help_message">Welcome to VaultNote.  Simply start the app, and speak your notes.\n\nSay \"settings\" to configure the settings, and \"help\" to see this screen.</string>
     <string name="title_activity_help">Help</string>
     <string name="upgrade_is_compulsory">Upgrading is compulsory.\nYou will become like us.</string>
 
-    <string name="about_message">Voice Note is a simple open source app to help you capture notes by speaking, and send them to your favorite note-taking app.\n\nSee the source at: https://github.com/TimMackenzie/VoiceNote</string>
+    <string name="about_message">VaultNote is a simple open source app to help you capture notes by speaking, and send them to your favorite note-taking app.\n\nSee the source at: https://github.com/TimMackenzie/VoiceNote</string>
 
     <string name="keyword_settings">starting preferences (keyword: settings)</string>
     <string name="keyword_preferences">starting preferences (keyword: preferences)</string>
@@ -22,4 +22,17 @@
 
     <string name="message_send_failed">Failed to send message.\nTry a different destination in the settings.</string>
 
+    <!-- UI Strings -->
+    <string name="save">SAVE</string>
+    <string name="voice">VOICE</string>
+    <string name="stop">STOP</string>
+    <string name="note_title_hint">Note Title</string>
+    <string name="note_content_hint">Start typing content...</string>
+    <string name="select_vault">SELECT VAULT FOLDER</string>
+    <string name="auto_export_title">Auto-export to Obsidian</string>
+    <string name="auto_export_desc">Automatically create .md files when saving notes</string>
+    <string name="voice_recognition_header">VOICE RECOGNITION</string>
+    <string name="default_lang_label">App Language &amp; Default Voice</string>
+    <string name="custom_commands_label">Custom Commands (Ex: \'comma\' -> \',\')</string>
+    <string name="add_command">ADD COMMAND</string>
 </resources>

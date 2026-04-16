@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:padding="16dp">
+
+    <!-- Phần nhập tiêu đề -->
+    <EditText
+        android:id="@+id/edit_note_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/note_title_hint"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:background="@null"
+        android:paddingBottom="16dp"
+        android:layout_alignParentTop="true" />
+
+    <!-- Thanh công cụ dưới cùng (Bottom Bar) -->
+    <LinearLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <ProgressBar
+            android:id="@+id/voice_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:indeterminateTint="#FF0000"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/language_toggle_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:checkedButton="@+id/btn_lang_vi"
+                android:layout_marginEnd="8dp">
+                <Button
+                    android:id="@+id/btn_lang_vi"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:text="VI" />
+                <Button
+                    android:id="@+id/btn_lang_en"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:text="EN" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_voice"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/voice"
+                app:icon="@android:drawable/ic_btn_speak_now"
+                app:iconTint="#007BFF"
+                android:textColor="#007BFF"
+                app:strokeColor="#007BFF"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/button_save"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/save"
+                android:backgroundTint="#007BFF" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Phần nhập nội dung (Chiếm khoảng trống còn lại) -->
+    <EditText
+        android:id="@+id/edit_note_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/edit_note_title"
+        android:layout_above="@id/bottom_bar"
+        android:gravity="top"
+        android:hint="@string/note_content_hint"
+        android:textColor="#DDDDDD"
+        android:textColorHint="#666666"
+        android:background="@null"
+        android:paddingTop="8dp" />
+
+</RelativeLayout>

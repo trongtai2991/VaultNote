@@ -26,4 +26,12 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <!-- Theme mới cho các màn hình AppCompatActivity -->
+    <style name="AppTheme.Vault" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#007BFF</item>
+        <item name="colorPrimaryDark">#0056b3</item>
+        <item name="colorAccent">#007BFF</item>
+        <item name="android:windowBackground">#121212</item>
+    </style>
+
 </resources>
