@@ -40,6 +40,20 @@
         tools:listitem="@layout/item_note" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_ai_logs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Xem AI Logs"
+        android:src="@android:drawable/ic_menu_info_details"
+        app:layout_constraintBottom_toTopOf="@id/fab_add_note"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:backgroundTint="#FF9800"
+        app:fabSize="mini"
+        app:tint="#FFFFFF" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_note"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

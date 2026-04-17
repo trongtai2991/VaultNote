@@ -14,9 +14,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.lifecycleScope
 import com.simplifynowsoftware.voicenote.data.NoteAdapter
 import com.simplifynowsoftware.voicenote.data.NoteViewModel
 import com.simplifynowsoftware.voicenote.export.ObsidianExporter
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,6 +65,16 @@ class MainActivity : AppCompatActivity() {
             notes?.let { adapter.setNotes(it) }
         }
 
+        // Quan sát trạng thái AI
+        lifecycleScope.launch {
+            viewModel.aiResultEvent.collectLatest { message ->
+                message?.let {
+                    Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                    viewModel.clearAiEvent()
+                }
+            }
+        }
+
         // Swipe to Delete
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
@@ -87,6 +100,10 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<FloatingActionButton>(R.id.fab_add_note).setOnClickListener {
             startActivity(Intent(this, NoteEditorActivity::class.java))
+        }
+
+        findViewById<FloatingActionButton>(R.id.fab_ai_logs).setOnClickListener {
+            startActivity(Intent(this, com.simplifynowsoftware.voicenote.ui.AiLogsActivity::class.java))
         }
     }
 

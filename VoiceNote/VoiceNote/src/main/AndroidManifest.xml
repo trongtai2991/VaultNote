@@ -4,13 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme.Vault"
+        android:enableOnBackInvokedCallback="true"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <service
+            android:name="com.google.android.gms.metadata.ModuleDependencies"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+            </intent-filter>
+            <meta-data
+                android:name="optional_module_dependencies"
+                android:value="com.google.android.gms.aicore" />
+        </service>
+
         <activity
             android:name=".VoiceNoteActivity"
             android:exported="true"
@@ -36,6 +52,11 @@
         <activity
             android:name=".NoteEditorActivity"
             android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.AiLogsActivity"
+            android:label="AI Thinking Logs"
+            android:exported="false">
         </activity>
         <activity
             android:name=".Help"

@@ -32,10 +32,10 @@ class NoteAdapter(private val onNoteClick: (Note) -> Unit) : RecyclerView.Adapte
         holder.id.text = "#${currentNote.id}"
         holder.title.text = if (currentNote.title.isEmpty()) "Không tiêu đề" else currentNote.title
         
-        // GIẢI MÃ PREVIEW NỘI DUNG
+        // GIẢI MÃ PREVIEW NỘI DUNG (Sử dụng silent = true để tránh spam log)
         val displayContent = if (!currentNote.iv.isNullOrEmpty()) {
             try {
-                val decrypted = cryptoManager.decrypt(currentNote.content, currentNote.iv)
+                val decrypted = cryptoManager.decrypt(currentNote.content, currentNote.iv, silent = true)
                 if (decrypted.length > 60) decrypted.take(60) + "..." else decrypted
             } catch (e: Exception) {
                 "Dữ liệu đã được mã hóa an toàn"

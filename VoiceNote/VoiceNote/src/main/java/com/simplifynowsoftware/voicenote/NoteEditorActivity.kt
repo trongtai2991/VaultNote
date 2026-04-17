@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -45,6 +46,8 @@ class NoteEditorActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note_editor)
+
+        com.simplifynowsoftware.voicenote.manager.AiLogManager.log("📝 Mở trình soạn thảo ghi chú")
 
         viewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
 
@@ -101,6 +104,7 @@ class NoteEditorActivity : AppCompatActivity() {
 
     private fun saveNote(title: String, content: String) {
         if (title.isNotEmpty() || content.isNotEmpty()) {
+            com.simplifynowsoftware.voicenote.manager.AiLogManager.log("💾 Đang chuẩn bị lưu ghi chú: $title")
             val encryptedData = cryptoManager.encrypt(content)
             val noteToSave = if (isEditMode) {
                 originalNote?.copy(
@@ -115,11 +119,17 @@ class NoteEditorActivity : AppCompatActivity() {
 
             if (isEditMode) {
                 viewModel.update(noteToSave)
+                checkAndAutoExport(noteToSave)
+                finish()
             } else {
-                viewModel.insert(noteToSave)
+                Log.i("OpenRouterAI", "📝 Đang gọi insertWithAi cho note mới...")
+                // Sử dụng hàm insertWithAi và thực hiện Export sau khi AI xong
+                viewModel.insertWithAi(noteToSave, content) { processedNote ->
+                    Log.i("OpenRouterAI", "🎯 Callback onComplete nhận được Note ID: ${processedNote.id}")
+                    checkAndAutoExport(processedNote)
+                    runOnUiThread { finish() }
+                }
             }
-            checkAndAutoExport(noteToSave)
-            finish()
         }
     }
 
@@ -127,10 +137,23 @@ class NoteEditorActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("VaultSettings", android.content.Context.MODE_PRIVATE)
         val isEnabled = prefs.getBoolean("auto_export_enabled", false)
         val uriString = prefs.getString("vault_uri", null)
+        
+        val statusMsg = "📤 Kiểm tra Auto-Export: Bật=$isEnabled, Đã chọn Vault=${uriString != null}"
+        Log.i("OpenRouterAI", statusMsg)
+        com.simplifynowsoftware.voicenote.manager.AiLogManager.log(statusMsg)
+        
         if (isEnabled && uriString != null) {
             val uri = android.net.Uri.parse(uriString)
-            val exporter = com.simplifynowsoftware.voicenote.export.ObsidianExporter(this)
-            exporter.exportNoteToMarkdown(uri, note)
+            // Sử dụng applicationContext để tránh leak và đảm bảo ghi file khi Activity đóng
+            val exporter = com.simplifynowsoftware.voicenote.export.ObsidianExporter(applicationContext)
+            val success = exporter.exportNoteToMarkdown(uri, note)
+            val resultMsg = "📤 Kết quả Export: ${if(success) "THÀNH CÔNG" else "THẤT BẠI"}"
+            Log.i("OpenRouterAI", resultMsg)
+            com.simplifynowsoftware.voicenote.manager.AiLogManager.log(resultMsg)
+        } else if (!isEnabled) {
+            com.simplifynowsoftware.voicenote.manager.AiLogManager.log("⚠️ Auto-Export đang TẮT trong Cài đặt")
+        } else {
+            com.simplifynowsoftware.voicenote.manager.AiLogManager.log("⚠️ Chưa chọn thư mục Vault trong Cài đặt")
         }
     }
 
@@ -149,6 +172,7 @@ class NoteEditorActivity : AppCompatActivity() {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLang)
         speechRecognizer?.startListening(intent)
         setRecordingState(true)
+        com.simplifynowsoftware.voicenote.manager.AiLogManager.log("🎤 Bắt đầu nhận diện giọng nói ($selectedLang)")
     }
 
     private fun stopVoiceInput() {

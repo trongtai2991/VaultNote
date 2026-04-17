@@ -9,6 +9,9 @@ data class Note(
     val title: String,
     val content: String, // Đây sẽ là nội dung đã mã hóa (Base64)
     val iv: String? = null, // Initialization Vector để giải mã
+    val folder: String? = "Default",
+    val tags: String? = "[]", // Lưu JSON array dạng string
+    val links: String? = "[]", // Wikilinks
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

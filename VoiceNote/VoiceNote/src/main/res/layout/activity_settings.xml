@@ -134,5 +134,79 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:textColor="#2196F3" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- PHẦN AI CONFIGURATION -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI CONFIGURATION (OPENROUTER)"
+            android:textColor="#FF9800"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="OpenRouter API Key"
+            app:hintTextColor="#FF9800"
+            app:boxStrokeColor="#FF9800"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selected Model"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/text_selected_model"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="deepseek/deepseek-chat"
+                android:textColor="#888888"
+                android:background="#1E1E1E"
+                android:padding="12dp" />
+
+            <Button
+                android:id="@+id/btn_select_model"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SELECT"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="#FF9800" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_save_ai_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SAVE AI CONFIG"
+            android:backgroundTint="#FF9800"
+            android:layout_marginBottom="40dp" />
+
     </LinearLayout>
 </ScrollView>
